@@ -1,0 +1,9 @@
+# No external dependencies!
+# This project uses only Python standard library modules:
+# - json
+# - os
+# - datetime
+# - dataclasses
+# - typing
+# - argparse
+# - pathlib
