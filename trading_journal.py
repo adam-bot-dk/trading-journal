@@ -97,11 +97,15 @@ class TradingJournal:
         if not self.trades:
             return {
                 'total_trades': 0,
+                'winning_trades': 0,
+                'losing_trades': 0,
                 'total_pnl': 0,
                 'win_rate': 0,
                 'avg_pnl': 0,
                 'best_trade': None,
-                'worst_trade': None
+                'worst_trade': None,
+                'avg_wins': 0,
+                'avg_losses': 0
             }
         
         winning_trades = [t for t in self.trades if t.pnl > 0]
@@ -110,6 +114,13 @@ class TradingJournal:
         best_trade = max(self.trades, key=lambda t: t.pnl)
         worst_trade = min(self.trades, key=lambda t: t.pnl)
         
+        # Convert to dict manually to include properties
+        def trade_to_dict(t):
+            d = asdict(t)
+            d['pnl'] = t.pnl
+            d['points'] = t.points
+            return d
+        
         return {
             'total_trades': len(self.trades),
             'winning_trades': len(winning_trades),
@@ -117,8 +128,8 @@ class TradingJournal:
             'total_pnl': sum(t.pnl for t in self.trades),
             'win_rate': (len(winning_trades) / len(self.trades) * 100) if self.trades else 0,
             'avg_pnl': sum(t.pnl for t in self.trades) / len(self.trades),
-            'best_trade': asdict(best_trade) if best_trade else None,
-            'worst_trade': asdict(worst_trade) if worst_trade else None,
+            'best_trade': trade_to_dict(best_trade) if best_trade else None,
+            'worst_trade': trade_to_dict(worst_trade) if worst_trade else None,
             'avg_wins': sum(t.pnl for t in winning_trades) / len(winning_trades) if winning_trades else 0,
             'avg_losses': sum(t.pnl for t in losing_trades) / len(losing_trades) if losing_trades else 0
         }
@@ -174,8 +185,7 @@ def main():
     
     # Add trade arguments
     add_parser = parser.add_argument_group('Add trade options')
-    add_parser.add_argument('--date', help='Trade date (YYYY-MM-DD)')
-    add_parser.add_argument('--ticker', help='Ticker symbol')
+    add_parser.add_argument('--trade-ticker', dest='ticker', help='Ticker symbol')
     add_parser.add_argument('--side', choices=['long', 'short'], help='Long or short')
     add_parser.add_argument('--entry', type=float, help='Entry price')
     add_parser.add_argument('--exit', type=float, help='Exit price')
@@ -188,7 +198,7 @@ def main():
     
     if args.add:
         trade = Trade(
-            date=args.date,
+            date=args.date or datetime.now().strftime('%Y-%m-%d'),
             ticker=args.ticker,
             side=args.side,
             entry_price=args.entry,
@@ -201,8 +211,11 @@ def main():
         print(f"  P&L: ${trade.pnl:,.2f}")
     
     elif args.stats:
-        stats = journal.get_stats()
-        print(f"""
+        if not journal.trades:
+            print("No trades recorded yet. Add some with --add")
+        else:
+            stats = journal.get_stats()
+            print(f"""
 --- STATISTICS ---
 Total Trades: {stats['total_trades']}
 Win Rate: {stats['win_rate']:.1f}%

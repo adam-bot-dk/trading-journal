@@ -1,0 +1,27 @@
+{
+  "trades": [
+    {
+      "date": "2026-04-18",
+      "ticker": "NQ",
+      "side": "long",
+      "entry_price": 18500.0,
+      "exit_price": 18520.0,
+      "contracts": 10,
+      "commission": 0.0,
+      "notes": "Test trade"
+    },
+    {
+      "date": "2026-04-18",
+      "ticker": "MES",
+      "side": "short",
+      "entry_price": 2100.0,
+      "exit_price": 2105.0,
+      "contracts": 5,
+      "commission": 0.0,
+      "notes": "Stop hit"
+    }
+  ],
+  "closed_days": [
+    "2026-04-18"
+  ]
+}
